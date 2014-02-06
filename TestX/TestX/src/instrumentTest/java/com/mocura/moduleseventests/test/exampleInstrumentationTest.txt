@@ -1,0 +1,98 @@
+package com.mocura.moduleseventests.test;
+
+import android.test.ActivityInstrumentationTestCase2;
+import android.widget.ListView;
+
+import com.jayway.android.robotium.solo.Solo;
+import com.mocura.moduleseven.AddWorkActivity;
+import com.mocura.moduleseven.EditActivity;
+import com.mocura.moduleseven.MainActivity;
+
+/**
+ * Created by BForte on 1/20/14.
+ */
+
+/**
+ * This class is a test to automate the application and verify that certain tasks are completed correctly. Your instrumentationTests should not be a subpackage
+ * 'tests'; rather they should be their own directory and package entirely.
+ */
+
+public class InstrumentationTest extends ActivityInstrumentationTestCase2<MainActivity> {
+
+	private Solo solo;
+	public int countBeforeDeletion;
+	public int countAfterDeletion;
+
+	public InstrumentationTest() {
+
+		super(MainActivity.class);
+	}
+
+	public void setUp() throws Exception {
+		solo = new Solo(getInstrumentation(), getActivity());
+
+	}
+
+	@Override
+	public void tearDown() throws Exception {
+
+		solo.finishOpenedActivities();
+
+	}
+
+	public void testCreateButton1() {
+		solo.assertCurrentActivity("wrong activity", MainActivity.class);
+		solo.clickOnActionBarItem(com.mocura.moduleseven.R.id.addWork);
+		solo.assertCurrentActivity("on the Add Activity screen", AddWorkActivity.class);
+		solo.enterText(0, "Indatus");
+		solo.enterText(1, "22.7");
+		solo.enterText(2, "1/19/2014");
+		solo.clickOnButton("OK");
+		solo.sleep(1000);
+	}
+
+	public void testCreateButton2() {
+		solo.assertCurrentActivity("wrong activity", MainActivity.class);
+		solo.clickOnActionBarItem(com.mocura.moduleseven.R.id.addWork);
+		solo.assertCurrentActivity("on the Add Activity screen", AddWorkActivity.class);
+		solo.enterText(0, "Mocura");
+		solo.enterText(1, "11.02");
+		solo.enterText(2, "1/20/2014");
+		solo.clickOnButton("OK");
+		solo.sleep(1000);
+	}
+
+	public void testCreateButton3() {
+		solo.assertCurrentActivity("wrong activity", MainActivity.class);
+		solo.clickOnActionBarItem(com.mocura.moduleseven.R.id.addWork);
+		solo.assertCurrentActivity("on the Add Activity screen", AddWorkActivity.class);
+		solo.enterText(0, "Google");
+		solo.enterText(1, "26.54");
+		solo.enterText(2, "1/21/2014");
+		solo.clickOnButton("OK");
+		solo.sleep(1000);
+	}
+
+	public void testDelete() {
+		ListView list = (ListView) solo.getView(com.mocura.moduleseven.R.id.main_mHoursList);
+		countBeforeDeletion = list.getAdapter().getCount();
+		/* Long click 3 rows and Delete them */
+		solo.clickLongInList(countAfterDeletion);
+		solo.clickOnButton("Yes");
+		solo.clickLongInList(countAfterDeletion - 1);
+		solo.clickOnButton("Yes");
+		solo.clickLongInList(countAfterDeletion - 2);
+		solo.clickOnButton("Yes");
+		solo.sleep(3000); //wait and make sure process is completed.
+		/* verify that they were deleted */
+		int countAfterDeletionOf3Records = list.getAdapter().getCount();
+		if (countBeforeDeletion == countAfterDeletionOf3Records + 3) {
+			//force a success
+			solo.assertCurrentActivity("TEST-SUCCESS ", MainActivity.class);
+		} else {
+			//force a fail
+			solo.assertCurrentActivity("TEST-FAIL ", EditActivity.class);
+		}
+	}
+
+}

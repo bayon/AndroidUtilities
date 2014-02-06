@@ -1,0 +1,108 @@
+package com.mocura.moduleseventests.test;
+
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
+import android.test.AndroidTestCase;
+import android.util.Log;
+
+import com.mocura.moduleseven.helper.Helper;
+import com.mocura.moduleseven.models.Hour;
+
+import java.util.List;
+
+/**
+ * Created by BForte on 1/16/14.
+ */
+
+/**
+ * This class is a unit test for the CRUD methods of the Hours class.
+ */
+
+public class DatabaseTest extends AndroidTestCase {
+
+	private Context mContext;
+	private boolean mDatabaseExists = false;
+	public Helper mXHelper;
+
+	/**
+	 * This method makes sure the database exists before trying to do any tests by creating a boolean flag, mDatabaseExists.
+	 *
+	 * @throws Exception
+	 */
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		mContext = getContext();
+
+		mXHelper = new Helper(mContext);
+		mXHelper.open();
+
+		String pathToDatabase = String.valueOf(mContext.getDatabasePath("Hour"));
+		SQLiteDatabase checkDB = null;
+		// SQLiteDatabase mDatabase;
+		try {
+			checkDB = SQLiteDatabase.openDatabase(pathToDatabase, null, SQLiteDatabase.OPEN_READONLY);
+			checkDB.close();
+		}
+		catch (SQLiteException e) {
+			// database doesn't exist yet.
+		}
+
+		if (checkDB != null) {
+			mDatabaseExists = true;
+			//mDatabase = checkDB;
+		} else {
+			mDatabaseExists = false;
+		}
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		mXHelper.close();
+	}
+
+	/**
+	 * This method tests whether an Hours object was created by verifying that the company name sent in, equals the company name that gets sent out.
+	 */
+	public void testCRUD() {
+		if (mDatabaseExists) {
+
+			try {
+
+				//create
+				Hour xhour1 = new Hour("TestCompanyName", 1.2, "1/22/2014");
+				mXHelper.createXHour(xhour1);
+
+				//read
+				List<Hour> hourList = mXHelper.readAllXHour();
+				Hour lastHour = hourList.get(hourList.size() - 1);
+				assertEquals(lastHour.getCompany(), "TestCompanyName");
+
+				//update
+				lastHour.setCompany("UpdatedCompany");
+				mXHelper.updateHours(lastHour);
+				List<Hour> xUpdatedHourList = mXHelper.readAllXHour();
+				Hour lastUpdatedHour = hourList.get(xUpdatedHourList.size() - 1);
+				assertEquals(lastUpdatedHour.getCompany(), "UpdatedCompany");
+
+				//delete
+				int countBeforeDelete = xUpdatedHourList.size() - 1;
+				mXHelper.deleteXHour(lastUpdatedHour);
+				List<Hour> xDeletedHourList = mXHelper.readAllXHour();
+				int countAfterDelete = xDeletedHourList.size() - 1;
+				assertTrue("Delete Test Failed:", countBeforeDelete - 1 == countAfterDelete);
+
+			}
+			catch (Exception e) {
+				Log.d("DEBUG", e.toString());
+			}
+
+		} else {
+			String database = "database";
+			assertEquals("databaseDoesNotExist", database);
+		}
+	}
+
+}
